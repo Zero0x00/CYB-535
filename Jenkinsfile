@@ -17,8 +17,10 @@ pipeline {
 
         stage('Build Application - Java 17') {
             steps {
+                sh 'rm -rf target'
                 sh 'docker cp . java17-builder:/workspace'
                 sh 'docker exec java17-builder sh -c "cd /workspace && java -version && mvn clean package -DskipTests"'
+                sh 'docker cp java17-builder:/workspace/target ./target'
             }
         }
 
@@ -40,6 +42,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
+                sh 'ls -la target'
                 sh 'docker build -t ${DOCKER_IMAGE} -t ${DOCKER_LATEST} .'
             }
         }
