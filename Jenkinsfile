@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Zero0x00/CYB-535.git'
+                checkout scm
             }
         }
 
@@ -29,11 +29,11 @@ pipeline {
             }
         }
 
-        stage('Analyze Code - SonarQube with Java 8') {
+        stage('Analyze Code - SonarQube') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
-                    sh 'docker cp . java8-analyzer:/workspace'
-                    sh 'docker exec java8-analyzer sh -c "cd /workspace && java -version && mvn sonar:sonar -Dsonar.projectKey=java-app -Dsonar.projectName=java-app -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN"'
+                    sh 'docker cp . java11-tester:/workspace'
+                    sh 'docker exec java11-tester sh -c "cd /workspace && java -version && mvn sonar:sonar -Dsonar.projectKey=java-app -Dsonar.projectName=java-app -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$SONAR_AUTH_TOKEN"'
                 }
             }
         }
@@ -55,7 +55,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f k8s/deployment.yaml'
             }
         }
     }
